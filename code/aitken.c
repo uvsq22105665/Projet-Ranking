@@ -270,15 +270,11 @@ double *Aitken(double * pi,double * pi1,double * pi2, int dimension){
         deno = (pi2[i] - (2 * pi1[i]) + pi[i]);
         if(deno!=0 && pi2[i] > (nomi/deno) )
             res[i] = pi2[i] - (nomi/deno);
-        else exit(1);
+        else
+            return pi2;
+        
         //printf(" %lf ", res[i] );
     }
-    printf("res : \n");
-    for (int i = 0; i < dimension; ++i)
-    {
-        printf("%lf ", res[i] );
-    }
-    printf("\n");
     return res;
 }
 
@@ -315,7 +311,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     for (int i = 0; i < dimension; ++i)
     {
         somme+= npi[i];
-        //printf(" %lf ", npi[i] );
+        printf(" %lf ", npi[i] );
     }
 
     printf(" sum : %lf\n", somme);
@@ -336,7 +332,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
         pi2[i] += sum;
     }
     int i = 2;
-    int period = 10;
+    int period = 40;
     double delta =1;
     while (delta > epsilon) {
         
