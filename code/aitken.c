@@ -6,7 +6,7 @@
 #define EPSILON 1e-6
 
 int * f;
-
+//pour compiler : gcc aitken.c -o aitken -lm
 // Structure représentant un arc du graphe
 typedef struct Arc Arc;
 struct Arc {
@@ -141,7 +141,7 @@ double double_abs(double value){
 
 double norme1(double * npi, double * opi, int dimension) {
   
-  double norme = 0;
+  double norme = 0.;
   
   for (int i = 0; i < dimension; i++)
     norme += double_abs(npi[i] - opi[i]);
@@ -260,54 +260,25 @@ double * puissance(Liste * P, double epsilon) {
     return npi;
 }
 
-double *Aitken(double * pi,Liste * P, int dimension){
-    double const_term = (1. - alpha) * (1. / dimension);
-
-    double * pi1 = product(pi, P -> list, dimension);
-    if (pi1 == NULL) {
-        free(pi);
-        perror("Error. Terminating program.\n");
-        return NULL;
-    }
-
-    double sum = 0;
-    for (int j = 0; j < dimension; j++)
-        sum += pi[j] * f[j];
-    sum *= alpha * (1. / dimension);
-    for (int i = 0; i < dimension; i++) {
-        pi1[i] *= alpha;
-        pi1[i] += const_term;
-        pi1[i] += sum;
-    }
-
-    double * pi2 = product(pi1, P -> list, dimension);
-    if (pi2 == NULL) {
-        free(pi);
-        perror("Error. Terminating program.\n");
-        return NULL;
-    }
-    
-    sum = 0;
-    for (int j = 0; j < dimension; j++)
-        sum += pi1[j] * f[j];
-    sum *= alpha * (1. / dimension);
-    for (int i = 0; i < dimension; i++) {
-        pi2[i] *= alpha;
-        pi2[i] += const_term;
-        pi2[i] += sum;
-    }
-
-    double * nomi = (double *) malloc(dimension * sizeof(double));
-    double * deno = (double *) malloc(dimension * sizeof(double));
+double *Aitken(double * pi,double * pi1,double * pi2, int dimension){
+    double nomi = 0;
+    double deno = 0;
     double * res = (double *) malloc(dimension * sizeof(double));
     for (int i = 0; i < dimension; ++i)
     {
-        nomi[i] = (pi1[i] - pi[i]) * (pi1[i] - pi[i]);
-        deno[i] = (pi2[i] - (2 * pi1[i]) + pi[i]);
-        res[i] = pi2[i] - (nomi[i]/deno[i]);
+        nomi = (pi1[i] - pi[i]) * (pi1[i] - pi[i]);
+        deno = (pi2[i] - (2 * pi1[i]) + pi[i]);
+        if(deno!=0 && pi2[i] > (nomi/deno) )
+            res[i] = pi2[i] - (nomi/deno);
+        else exit(1);
         //printf(" %lf ", res[i] );
     }
-    
+    printf("res : \n");
+    for (int i = 0; i < dimension; ++i)
+    {
+        printf("%lf ", res[i] );
+    }
+    printf("\n");
     return res;
 }
 
@@ -321,7 +292,6 @@ double * aitken_puissance(Liste * P, double epsilon) {
         perror("Couldn't create opi.\n");
         return NULL;
     }
-
     for (int i = 0; i < dimension; i++)
         opi[i] = 1. / dimension;
     
@@ -331,8 +301,6 @@ double * aitken_puissance(Liste * P, double epsilon) {
         perror("Error. Terminating program.\n");
         return NULL;
     }
-    
-
     double sum = 0;
     for (int j = 0; j < dimension; j++)
         sum += opi[j] * f[j];
@@ -349,47 +317,62 @@ double * aitken_puissance(Liste * P, double epsilon) {
         somme+= npi[i];
         //printf(" %lf ", npi[i] );
     }
+
     printf(" sum : %lf\n", somme);
-    
 
-    
-
+    double * pi2 = product(npi, P -> list, dimension);
+    if (pi2 == NULL) {
+        free(npi);
+        perror("Error. Terminating program.\n");
+        return NULL;
+    }
+    sum = 0;
+    for (int j = 0; j < dimension; j++)
+        sum += npi[j] * f[j];
+    sum *= alpha * (1. / dimension);
+    for (int i = 0; i < dimension; i++) {
+        pi2[i] *= alpha;
+        pi2[i] += const_term;
+        pi2[i] += sum;
+    }
     int i = 2;
-int period = 0;
-    while (norme1(npi, opi, dimension) >= epsilon) {
+    int period = 10;
+    double delta =1;
+    while (delta > epsilon) {
         
-        free(opi);
+        //free(opi);
         opi = npi;
-        npi = product(opi, P -> list, dimension);
-        if (npi == NULL) {
-            free(opi);
-            perror("Error. Terminating program.\n");
-            return NULL;
-        }
-
-        double sum = 0;
-        for (int j = 0; j < dimension; j++)
-            sum += opi[j] * f[j];
-        sum *= alpha * (1. / dimension);
-        for (int i = 0; i < dimension; i++) {
-            npi[i] *= alpha;
-            npi[i] += const_term;
-            npi[i] += sum;
-        }
+        npi= pi2;
+        pi2 = product(npi, P -> list, dimension);
+    if (pi2 == NULL) {
+        free(npi);
+        perror("Error. Terminating program.\n");
+        return NULL;
+    }
+    sum = 0;
+    for (int j = 0; j < dimension; j++)
+        sum += npi[j] * f[j];
+    sum *= alpha * (1. / dimension);
+    for (int i = 0; i < dimension; i++) {
+        pi2[i] *= alpha;
+        pi2[i] += const_term;
+        pi2[i] += sum;
+    }
         
-         printf("npi : \n");
+         printf("pi2 : \n");
          double somme = 0;
     for (int i = 0; i < dimension; ++i)
     {
-        somme+= npi[i];
+        somme+= pi2[i];
         //printf(" %lf ", npi[i] );
     }
+    delta = norme1(npi, pi2, dimension);
     printf(" \nsum : %lf\n", somme);
         printf("Itération %d\n", i);
+        
+        if(i%period ==0)
+            pi2 = Aitken(opi,npi,pi2,dimension);
         i++;
-        if(period%2 ==0)
-            npi = Aitken(npi,P,dimension);
-        period++;
         
     }
     
@@ -397,7 +380,7 @@ int period = 0;
     return npi;
 }
 
-
+//pour compiler : gcc aitken.c -o aitken -lm
 int main() {
     Liste * list = loadFile("data/wb-cs-stanford.txt");
     //puissance(list, EPSILON);
