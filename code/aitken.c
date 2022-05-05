@@ -261,6 +261,7 @@ double * puissance(Liste * P, double epsilon) {
 }
 
 double *Aitken(double * pi,double * pi1,double * pi2, int dimension){
+    printf("acceleration :\n");
     double nomi = 0;
     double deno = 0;
     double * res = (double *) malloc(dimension * sizeof(double));
@@ -278,7 +279,7 @@ double *Aitken(double * pi,double * pi1,double * pi2, int dimension){
     return res;
 }
 
-double * aitken_puissance(Liste * P, double epsilon) {
+void aitken_puissance(Liste * P, double epsilon) {
 
    int dimension = P -> dimension;
     double const_term = (1. - alpha) * (1. / dimension);
@@ -286,7 +287,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     double * opi = (double *) malloc(dimension * sizeof(double));
     if (opi == NULL) {
         perror("Couldn't create opi.\n");
-        return NULL;
+        exit(0);
     }
     for (int i = 0; i < dimension; i++)
         opi[i] = 1. / dimension;
@@ -295,7 +296,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     if (npi == NULL) {
         free(opi);
         perror("Error. Terminating program.\n");
-        return NULL;
+        exit(0);
     }
     double sum = 0;
     for (int j = 0; j < dimension; j++)
@@ -311,7 +312,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     for (int i = 0; i < dimension; ++i)
     {
         somme+= npi[i];
-        printf(" %lf ", npi[i] );
+        //printf(" %lf ", npi[i] );
     }
 
     printf(" sum : %lf\n", somme);
@@ -320,7 +321,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     if (pi2 == NULL) {
         free(npi);
         perror("Error. Terminating program.\n");
-        return NULL;
+        exit(0);
     }
     sum = 0;
     for (int j = 0; j < dimension; j++)
@@ -331,7 +332,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
         pi2[i] += const_term;
         pi2[i] += sum;
     }
-    int i = 2;
+    int i = 1;
     int period = 40;
     double delta =1;
     while (delta > epsilon) {
@@ -343,7 +344,7 @@ double * aitken_puissance(Liste * P, double epsilon) {
     if (pi2 == NULL) {
         free(npi);
         perror("Error. Terminating program.\n");
-        return NULL;
+        exit(0);
     }
     sum = 0;
     for (int j = 0; j < dimension; j++)
@@ -373,7 +374,8 @@ double * aitken_puissance(Liste * P, double epsilon) {
     }
     
     free(opi);
-    return npi;
+    free(npi);
+    free(pi2);
 }
 
 //pour compiler : gcc aitken.c -o aitken -lm
